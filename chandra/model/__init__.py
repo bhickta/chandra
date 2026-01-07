@@ -8,12 +8,12 @@ from chandra.settings import settings
 
 
 class InferenceManager:
-    def __init__(self, method: str = "vllm"):
+    def __init__(self, method: str = "vllm", quantization: str = None):
         assert method in ("vllm", "hf"), "method must be 'vllm' or 'hf'"
         self.method = method
 
         if method == "hf":
-            self.model = load_model()
+            self.model = load_model(quantization=quantization)
         else:
             self.model = None
 

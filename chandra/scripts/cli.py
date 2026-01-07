@@ -180,6 +180,12 @@ def save_merged_output(
     is_flag=True,
     default=False,
 )
+@click.option(
+    "--quantization",
+    type=click.Choice(["4bit", "8bit"], case_sensitive=False),
+    default=None,
+    help="Quantization level: '4bit' or '8bit'. Requires 'bitsandbytes' library.",
+)
 def main(
     input_path: Path,
     output_path: Path,
@@ -193,6 +199,7 @@ def main(
     save_html: bool,
     batch_size: int,
     paginate_output: bool,
+    quantization: str,
 ):
     if method == "hf":
         click.echo(
@@ -214,7 +221,9 @@ def main(
 
     # Load model
     click.echo(f"\nLoading model with method '{method}'...")
-    model = InferenceManager(method=method)
+    if quantization:
+        click.echo(f"Quantization: {quantization}")
+    model = InferenceManager(method=method, quantization=quantization)
     click.echo("Model loaded successfully.")
 
     # Get files to process

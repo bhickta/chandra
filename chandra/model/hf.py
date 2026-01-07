@@ -69,7 +69,7 @@ def process_batch_element(item: BatchInputItem, processor, bbox_scale: int):
     return message
 
 
-def load_model():
+def load_model(quantization: str = None):
     import torch
     from transformers import Qwen3VLForConditionalGeneration, Qwen3VLProcessor
 
@@ -84,10 +84,26 @@ def load_model():
     if settings.TORCH_ATTN:
         kwargs["attn_implementation"] = settings.TORCH_ATTN
 
+    if quantization:
+        from transformers import BitsAndBytesConfig
+
+        if quantization == "4bit":
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16,
+            )
+        elif quantization == "8bit":
+            bnb_config = BitsAndBytesConfig(load_in_8bit=True)
+        else:
+            raise ValueError(f"Invalid quantization type: {quantization}")
+        
+        kwargs["quantization_config"] = bnb_config
+
     model = Qwen3VLForConditionalGeneration.from_pretrained(
         settings.MODEL_CHECKPOINT, **kwargs
     )
-    model = model.eval()
+    # model.eval() # Not needed with quantization (and sometimes causes issues)
     processor = Qwen3VLProcessor.from_pretrained(settings.MODEL_CHECKPOINT)
     model.processor = processor
     return model
