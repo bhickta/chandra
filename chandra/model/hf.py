@@ -21,9 +21,12 @@ def generate_hf(
     messages = [
         process_batch_element(item, model.processor, bbox_scale) for item in batch
     ]
-    text = model.processor.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+    text = [
+        model.processor.apply_chat_template(
+            [msg], tokenize=False, add_generation_prompt=True
+        )
+        for msg in messages
+    ]
 
     image_inputs, _ = process_vision_info(messages)
     inputs = model.processor(

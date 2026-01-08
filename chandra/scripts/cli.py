@@ -65,7 +65,7 @@ def save_merged_output(
     for page_num, result in enumerate(results):
         # Add page separator for multi-page documents
         if page_num > 0 and paginate_output:
-            all_markdown.append(f"\n\n{page_num}" + "-" * 48 + "\n\n")
+            all_markdown.append(f"\n\n{page_num + 1}" + "-" * 48 + "\n\n")
             all_html.append(f"\n\n<!-- Page {page_num + 1} -->\n\n")
 
         all_markdown.append(result.markdown)
