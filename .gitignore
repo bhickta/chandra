@@ -224,3 +224,7 @@ __marimo__/
 .venv
 
 .idea/
+
+# Files
+assets/input
+assets/output
