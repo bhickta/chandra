@@ -1,4 +1,15 @@
+#!/usr/bin/env bash
+
+LOCKFILE="/tmp/chandra_ocr.lock"
+exec 9>"$LOCKFILE" || exit 1
+flock -n 9 || exit 0
+
+cd /home/bhickta/development/chandra || exit 1
+source /home/bhickta/development/chandra/.venv/bin/activate
+
+
 INPUT="assets/input/The Wonderland That is Himachal Pradesh.pdf"
+
 BASE_OUT="assets/output/wonderland_that_is_hp"
 
 # Detect last processed page to resume
@@ -26,7 +37,7 @@ if (( LAST_PAGE > 0 )); then
 else
     START=1
 fi
-END=100
+END=1652
 STEP=10
 
 for ((i=START; i<=END; i+=STEP)); do
@@ -38,7 +49,6 @@ for ((i=START; i<=END; i+=STEP)); do
     OUTDIR="${BASE_OUT}_${i}-${j}"
 
     echo "Processing pages $i to $j → $OUTDIR"
-    uv run \
     chandra \
       "$INPUT" \
       "$OUTDIR" \

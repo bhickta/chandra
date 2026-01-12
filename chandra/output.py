@@ -199,16 +199,31 @@ def parse_layout(html: str, image: Image.Image, bbox_scale=settings.BBOX_SCALE):
         bbox = div.get("data-bbox")
 
         try:
+            # First try JSON parsing
             bbox = json.loads(bbox)
             assert len(bbox) == 4, "Invalid bbox length"
         except Exception:
             try:
-                bbox = bbox.split(" ")
-                assert len(bbox) == 4, "Invalid bbox length"
+                # Fallback: regex to find all numbers
+                # This handles "100 200 800 900," or "[100, 200, 800, 900]"
+                bbox_str = str(bbox)
+                nums = re.findall(r"\d+", bbox_str)
+                if len(nums) == 4:
+                    bbox = nums
+                else:
+                    # Last resort fallback if regex finds too many or too few numbers
+                    # Only take the first 4 if we found more? Or default?
+                    if len(nums) >= 4:
+                         bbox = nums[:4]
+                    else:
+                         bbox = [0, 0, 1, 1]
             except Exception:
                 bbox = [0, 0, 1, 1]
 
-        bbox = list(map(int, bbox))
+        try:
+            bbox = list(map(int, bbox))
+        except ValueError:
+            bbox = [0, 0, 1, 1]
         # Normalize bbox
         bbox = [
             max(0, int(bbox[0] * width_scaler)),
