@@ -5,7 +5,7 @@ cd /home/bhickta/development/chandra || exit 1
 source /home/bhickta/development/chandra/.venv/bin/activate
 
 INPUT="assets/input/The Wonderland That is Himachal Pradesh.pdf"
-BASE_OUT="assets/output/wonderland_that_is_hp"
+BASE_OUT="assets/output/splits/wonderland_that_is_hp"
 
 # List of missing ranges provided by the user/join script
 RANGES=(
