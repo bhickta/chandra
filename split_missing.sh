@@ -36,21 +36,14 @@ RANGES=(
 
 for range in "${RANGES[@]}"; do
     OUTDIR="${BASE_OUT}_${range}"
-    echo "Reprocessing range: $range -> $OUTDIR"
-    
-    # Remove empty directory if it causes issues, or let chandra overwrite/handle it
-    # chandra seems to handle existing dirs, but let's be safe if it crashed before
+    echo "Splitting range: $range -> $OUTDIR"
     
     chandra \
       "$INPUT" \
       "$OUTDIR" \
-      --quantization 4bit \
-      --method hf \
-      --batch-size 5 \
-      --include-images \
-      --paginate_output \
+      --split-only \
       --page-range "$range"
       
-    echo "Finished $range"
+    echo "Finished splitting $range"
     echo "--------------------------------"
 done

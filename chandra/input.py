@@ -63,6 +63,15 @@ def parse_range_str(range_str: str) -> List[int]:
     return page_lst
 
 
+def split_pdf(filepath: str, page_range: List[int], output_path: str):
+    doc = pdfium.PdfDocument(filepath)
+    new_doc = pdfium.PdfDocument.new()
+    new_doc.import_pages(doc, page_range)
+    new_doc.save(str(output_path))
+    new_doc.close()
+    doc.close()
+
+
 def load_file(filepath: str, config: dict):
     page_range = config.get("page_range")
     if page_range:

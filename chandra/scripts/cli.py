@@ -4,7 +4,7 @@ from typing import List
 
 import click
 
-from chandra.input import load_file
+from chandra.input import load_file, parse_range_str, split_pdf
 from chandra.model import InferenceManager
 from chandra.model.schema import BatchInputItem
 
@@ -186,6 +186,12 @@ def save_merged_output(
     default=None,
     help="Quantization level: '4bit' or '8bit'. Requires 'bitsandbytes' library.",
 )
+@click.option(
+    "--split-only",
+    is_flag=True,
+    default=False,
+    help="Only split the PDF into the specified page range, without performing OCR.",
+)
 def main(
     input_path: Path,
     output_path: Path,
@@ -200,6 +206,7 @@ def main(
     batch_size: int,
     paginate_output: bool,
     quantization: str,
+    split_only: bool,
 ):
     if method == "hf":
         click.echo(
@@ -220,11 +227,15 @@ def main(
     output_path.mkdir(parents=True, exist_ok=True)
 
     # Load model
-    click.echo(f"\nLoading model with method '{method}'...")
-    if quantization:
-        click.echo(f"Quantization: {quantization}")
-    model = InferenceManager(method=method, quantization=quantization)
-    click.echo("Model loaded successfully.")
+    model = None
+    if not split_only:
+        click.echo(f"\nLoading model with method '{method}'...")
+        if quantization:
+            click.echo(f"Quantization: {quantization}")
+        model = InferenceManager(method=method, quantization=quantization)
+        click.echo("Model loaded successfully.")
+    else:
+        click.echo("\nRunning in split-only mode. Skipping model loading.")
 
     # Get files to process
     files_to_process = get_supported_files(input_path)
@@ -241,6 +252,23 @@ def main(
         )
 
         try:
+            if split_only:
+                if not page_range:
+                    click.echo("  Warning: No page range specified for split-only mode. No splitting will be performed.")
+                    continue
+                
+                # Create subfolder for this file
+                safe_name = file_path.stem
+                file_output_dir = output_path / safe_name
+                file_output_dir.mkdir(parents=True, exist_ok=True)
+                
+                output_pdf_path = file_output_dir / f"{safe_name}.pdf"
+                
+                pages = parse_range_str(page_range)
+                split_pdf(str(file_path), pages, str(output_pdf_path))
+                click.echo(f"  Saved split PDF: {output_pdf_path} ({len(pages)} page(s))")
+                continue
+
             # Load images from file
             config = {"page_range": page_range} if page_range else {}
             images = load_file(str(file_path), config)
